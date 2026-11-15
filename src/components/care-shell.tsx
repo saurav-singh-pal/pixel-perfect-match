@@ -1,0 +1,19 @@
+import { Link, useLocation } from '@tanstack/react-router';
+import { HeartPulse, LayoutDashboard, Pill, CalendarDays, Bell, Users, ShieldCheck, Accessibility, ChevronDown, Phone, LogIn, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useCare } from './care-context';
+import portrait from '@/assets/sharma-portrait.jpg';
+import type { ReactNode } from 'react';
+
+const nav=[{to:'/',label:'Daily Routine',icon:LayoutDashboard},{to:'/medications',label:'Medications',icon:Pill},{to:'/appointments',label:'Appointments',icon:CalendarDays},{to:'/insights',label:'Alerts & Insights',icon:Bell},{to:'/profiles',label:'Care Profiles',icon:Users}] as const;
+export function Brand(){return <div className="brand"><span className="brand-symbol"><HeartPulse size={24}/></span><span>CareBridge</span><span className="brand-ai">AI</span></div>;}
+export function CareShell({children}:{children:ReactNode}){
+ const care=useCare();const location=useLocation();
+ return <div className={`care-app ${care.large?'large-mode':''} ${care.role==='elderly'?'elderly-mode':''}`}>
+ <aside className="care-sidebar"><Brand/><div className="nav-label">YOUR CARE SPACE</div><nav className="care-nav">{nav.filter(n=>care.role==='caretaker'||n.to==='/'||n.to==='/profiles').map(n=><Link key={n.to} to={n.to} className={location.pathname===n.to?'active':''}><n.icon size={20}/><span>{n.label}</span></Link>)}</nav>
+ <div className="sidebar-bottom"><div className="connected"><strong><ShieldCheck size={17} className="text-primary"/> Your care, connected</strong><p>A little peace of mind, every day.</p><div className="mt-3 text-primary text-xs"><span className="status-dot"/>Care data synced</div></div><Button variant="outline" asChild><a href="tel:112"><Phone size={17}/> Emergency help</a></Button><div className="text-xs text-muted-foreground flex gap-2 items-center"><HeartPulse size={14}/> Made for the people you love</div></div></aside>
+ <div className="care-main"><header className="care-topbar"><span className="text-sm text-muted-foreground">Your family’s care, all in one place.</span><div className="mobile-brand"><Brand/></div><div className="topbar-actions"><div className="mode-control"><Button variant="ghost" className={care.role==='caretaker'?'selected':''} onClick={()=>care.switchRole('caretaker')}><Users size={15}/> Caretaker</Button><Button variant="ghost" className={care.role==='elderly'?'selected':''} onClick={()=>care.switchRole('elderly')}><HeartPulse size={15}/> Elderly view</Button></div><Button variant="ghost" size="icon" title="High contrast / large text" aria-label="High contrast / large text" aria-pressed={care.large} onClick={()=>care.setLarge(!care.large)}><Accessibility size={22}/></Button><Button variant="ghost" size="icon" asChild title="Email alerts"><Link to="/insights" aria-label="Email alerts"><Bell size={20}/></Link></Button><img className="avatar" src={portrait} width={40} height={40} alt="Mr. Sharma"/><Button variant="ghost" size="icon" asChild title="Switch care profile"><Link to="/profiles" aria-label="Switch care profile"><ChevronDown size={17}/></Link></Button></div></header>
+ <main className="care-content">{care.error?<div className="review-warning">{care.error.message}<Button asChild variant="link"><Link to="/profiles"><LogIn/> Reconnect profile</Link></Button></div>:children}<div className="footer-note"><ShieldCheck size={14}/> Connected with care. Always with you.</div></main></div></div>;
+}
+export function PageHeading({title,subtitle,action}:{title:string;subtitle:string;action?:ReactNode}){return <div className="page-heading"><div><h1>{title}</h1><p>{subtitle}</p></div>{action}</div>;}
+export function Loading(){return <div className="py-20 text-center text-muted-foreground"><Sparkles className="mx-auto mb-4"/>Loading your care space…</div>;}

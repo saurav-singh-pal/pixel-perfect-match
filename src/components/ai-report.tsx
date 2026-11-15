@@ -1,0 +1,8 @@
+import { useState } from 'react';
+import { Sparkles, Copy } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useCare } from './care-context';
+import { careAI } from '@/lib/care.functions';
+import { toast } from 'sonner';
+export function AIReportButton({kind='brief',compact=false}:{kind?:'brief'|'questions';compact?:boolean}){const care=useCare();const [busy,setBusy]=useState(false);const [report,setReport]=useState('');const generate=async()=>{setBusy(true);try{const r=await careAI({data:{token:await care.ensureToken(),kind}});setReport(r.text);}catch(e){toast.error(e instanceof Error?e.message:'AI is unavailable. Please try later.');}finally{setBusy(false);}};return <><Button variant={compact?'outline':'default'} disabled={busy} onClick={generate}><Sparkles size={17}/>{busy?'Preparing your report…':kind==='brief'?'Generate AI care brief':'Prepare visit questions'}</Button><Dialog open={!!report} onOpenChange={v=>{if(!v)setReport('');}}><DialogContent className="care-dialog"><DialogTitle>{kind==='brief'?'Your AI care brief':'Questions for your doctor'}</DialogTitle><DialogDescription>AI-assisted, not medical advice. Confirm details with your care team.</DialogDescription><div className="report-text">{report}</div><Button variant="outline" onClick={async()=>{await navigator.clipboard.writeText(report);toast.success('Copied to clipboard');}}><Copy/> Copy report</Button></DialogContent></Dialog></>;}

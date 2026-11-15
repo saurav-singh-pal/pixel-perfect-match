@@ -28,3 +28,10 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Care architecture
+- Care data is accessed through server functions using database-backed, expiring profile sessions; direct table access is locked to prevent public medical-data exposure.
+- Elderly and caretaker are shared-passcode session roles, not identity-verified privileges; server checks restrict management to caretaker sessions, and the UI warns this is a demonstration security model.
+- AI medication reviews never grant clinical safety clearance; every medication save requires confirmation with a qualified professional because model output is not medical advice.
+- Demo reads are restricted to the literal seeded demo profile; demo mutations obtain a scoped expiring session rather than opening table policies.
+- Shared care presentation uses a root context and route-specific pages so profile changes and dose records remain connected throughout navigation.

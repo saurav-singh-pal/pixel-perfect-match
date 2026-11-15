@@ -1,23 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
-
-// The home route ships no og:image, so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
-export const Route = createFileRoute("/")({
-  component: Index,
-});
-
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { Pill, Check, CalendarDays, TrendingUp, ArrowUpRight, Sparkles, Clock, Bell, Heart, ShieldCheck, ChevronRight, Phone } from 'lucide-react';
+import { CareShell, PageHeading, Loading } from '@/components/care-shell';
+import { useCare } from '@/components/care-context';
+import { MedicationGroups, AppointmentCard } from '@/components/care-items';
+import { AIReportButton } from '@/components/ai-report';
+import { Button } from '@/components/ui/button';
+import portrait from '@/assets/sharma-portrait.jpg';
+import { adherence } from '@/lib/care-rules';
+export const Route=createFileRoute('/')({head:()=>({meta:[{title:'Daily Routine — CareBridge AI'},{name:'description',content:'Today’s medication schedule, upcoming appointments and connected family care.'},{property:'og:title',content:'Daily Routine — CareBridge AI'},{property:'og:description',content:'A little peace of mind for your loved ones, every day.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary_large_image'}]}),component:Index});
+function Index(){const care=useCare();const d=care.data;return <CareShell>{care.loading||!d?<Loading/>:<><PageHeading title={care.role==='elderly'?`Hello, ${d.profile.elderly_name} ☀`:'A good day starts with care.'} subtitle={new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})} action={<Button variant="outline" asChild><Link to="/profiles"><UsersIcon/>Switch care profile</Link></Button>}/><div className="profile-strip"><img src={portrait} className="avatar" width={66} height={66} alt="Mr. Sharma"/><div><div className="eyebrow">YOU’RE CARING FOR</div><h2>{d.profile.elderly_name} <span className="text-muted-foreground font-normal text-lg">· {d.profile.age} years</span></h2><div className="profile-tags">{d.profile.conditions.map(c=><span key={c} className="tag">{c}</span>)}{d.profile.allergies.map(a=><span key={a} className="tag allergy">Allergy: {a}</span>)}</div></div><div className="profile-side"><div className="text-sm text-primary"><span className="status-dot"/>Care profile active</div><p>{d.profile.is_demo?'Demo care profile':'Shared family care'}</p><Button variant="link" size="sm" asChild><Link to="/profiles">View profile <ChevronRight size={14}/></Link></Button></div></div>
+{care.role==='caretaker'&&<div className="stats-grid">{[{label:'Today’s medications',value:d.medications.length,note:'Your daily care schedule',Icon:Pill},{label:'Doses taken',value:`${d.medications.filter(m=>m.status==='taken').length} / ${d.medications.length}`,note:'Every dose is a step forward',Icon:Check},{label:'Daily adherence',value:`${adherence(d.medications)}%`,note:'Today’s recorded doses',Icon:TrendingUp},{label:'Upcoming visits',value:d.appointments.length,note:'Your care team is here for you',Icon:CalendarDays}].map(s=><div className="stat" key={s.label}><div className="stat-top">{s.label}<span className="stat-icon"><s.Icon size={18}/></span></div><strong>{s.value}</strong><p>{s.note}</p></div>)}</div>}
+<div className="workspace-grid"><section><div className="section-heading"><h2><Pill size={21}/> Today’s medications</h2>{care.role==='caretaker'&&<Button variant="link" asChild><Link to="/medications">Manage schedule <ArrowUpRight size={14}/></Link></Button>}</div><MedicationGroups medications={d.medications}/></section><aside><section className="aside-section"><div className="section-heading"><h2><CalendarDays size={21}/> Upcoming visits</h2><Button variant="link" asChild><Link to="/appointments">View all</Link></Button></div>{d.appointments.slice(0,2).map(a=><AppointmentCard key={a.id} appointment={a}/>)}</section>{care.role==='caretaker'?<><section className="aside-section ai-panel"><h3><Sparkles size={21} className="text-primary"/> A little insight. Better care.</h3><p>A thoughtful snapshot of medication adherence and upcoming care, ready for your family or doctor.</p><AIReportButton/><div className="mt-3 text-xs text-muted-foreground flex justify-center gap-1 items-center"><ShieldCheck size={12}/> AI-assisted. Human-centered.</div></section><section><div className="section-heading"><h2><Bell size={20}/> Recent care activity</h2><Button variant="link" asChild><Link to="/insights">View all</Link></Button></div>{d.medications.filter(m=>m.status==='taken').slice(0,2).map(m=><div className="alert-row" key={m.id}><Check size={18} className="text-success"/><div><h3>{m.name} marked as taken</h3><p><Clock size={11} className="inline mr-1"/>Dose recorded · {m.scheduled_time}</p></div></div>)}{d.alerts.slice(0,1).map(a=><div className="alert-row" key={a.id}><Bell size={18} className="text-info"/><div><h3>{a.subject}</h3><p>Simulated email · Caretaker notified in demo log</p></div></div>)}</section></>:<div className="ai-panel"><h3><Heart/>You’re never alone.</h3><p>Your family’s care is just a call away.</p><Button variant="destructive" asChild><a href="tel:112"><Phone/> Emergency help · 112</a></Button><Button variant="outline" className="mt-3" asChild><a href={`mailto:${d.profile.caretaker_emails[0]??''}`}>Contact caretaker</a></Button></div>}</aside></div></>}</CareShell>;}
+function UsersIcon(){return <Heart size={16}/>;}
